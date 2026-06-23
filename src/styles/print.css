@@ -1,0 +1,63 @@
+@media print {
+  @page {
+    margin: 0.45in;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  .no-print,
+  header,
+  aside,
+  .scenario-bar {
+    display: none !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .goal-bar {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 8px !important;
+    margin-bottom: 18px !important;
+    background: #1b3a5c !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-title {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .print-title h1 {
+    margin: 0;
+    font-size: 24px;
+  }
+
+  .kpi-card,
+  .panel {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+
+  .chart-panel {
+    break-inside: avoid;
+  }
+
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+  }
+}

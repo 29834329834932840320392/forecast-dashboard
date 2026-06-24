@@ -1,4 +1,4 @@
-import { channelRows, oneDecimal, wholeNumber } from '../lib/calculations'
+import { channelRows, isWalkInChannel, wholeNumber, wholePercent } from '../lib/calculations'
 import type { Channel } from '../lib/types'
 
 export function FunnelTable({ channels }: { channels: Channel[] }) {
@@ -39,19 +39,19 @@ export function FunnelTable({ channels }: { channels: Channel[] }) {
                   </span>
                 </td>
                 <td>{wholeNumber.format(row.leads)}</td>
-                <td>{oneDecimal.format(row.appts)}</td>
-                <td>{oneDecimal.format(row.shown)}</td>
-                <td>{oneDecimal.format(row.leadToSale * 100)}%</td>
-                <td>{oneDecimal.format(row.units)}</td>
+                <td>{isWalkInChannel(row) ? 'N/A' : wholeNumber.format(row.appts)}</td>
+                <td>{isWalkInChannel(row) ? 'N/A' : wholeNumber.format(row.shown)}</td>
+                <td>{wholePercent.format(row.leadToSale * 100)}%</td>
+                <td>{wholeNumber.format(row.units)}</td>
               </tr>
             ))}
             <tr className="total-row">
               <td>Total</td>
               <td>{wholeNumber.format(totals.leads)}</td>
-              <td>{oneDecimal.format(totals.appts)}</td>
-              <td>{oneDecimal.format(totals.shown)}</td>
-              <td>{oneDecimal.format(totalLeadToSale * 100)}%</td>
-              <td>{oneDecimal.format(totals.units)}</td>
+              <td>{wholeNumber.format(totals.appts)}</td>
+              <td>{wholeNumber.format(totals.shown)}</td>
+              <td>{wholePercent.format(totalLeadToSale * 100)}%</td>
+              <td>{wholeNumber.format(totals.units)}</td>
             </tr>
           </tbody>
         </table>

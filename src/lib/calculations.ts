@@ -37,7 +37,7 @@ export function channelLeadToSale(channel: Channel) {
 
 export function channelAppts(channel: Channel) {
   if (isWalkInChannel(channel)) {
-    return channel.leads
+    return 0
   }
 
   return channel.leads * pctToDecimal(channel.apptSetPct)
@@ -152,7 +152,7 @@ export const sampleState: PlannerState = {
       color: '#2563EB',
       leads: 432,
       apptSetPct: 47,
-      showPct: 77.8,
+      showPct: 78,
       closePct: 34,
     },
     {

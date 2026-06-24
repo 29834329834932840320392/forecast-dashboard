@@ -10,9 +10,8 @@ export const wholeNumber = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 0,
 })
 
-export const oneDecimal = new Intl.NumberFormat('en-US', {
-  maximumFractionDigits: 1,
-  minimumFractionDigits: 1,
+export const wholePercent = new Intl.NumberFormat('en-US', {
+  maximumFractionDigits: 0,
 })
 
 export function pctToDecimal(value: number) {
@@ -24,15 +23,31 @@ export function clampNumber(value: number, min = 0, max = Number.POSITIVE_INFINI
   return Math.min(Math.max(value, min), max)
 }
 
+export function isWalkInChannel(channel: Channel) {
+  return channel.id === 'walk-in'
+}
+
 export function channelLeadToSale(channel: Channel) {
+  if (isWalkInChannel(channel)) {
+    return pctToDecimal(channel.closePct)
+  }
+
   return pctToDecimal(channel.apptSetPct) * pctToDecimal(channel.showPct) * pctToDecimal(channel.closePct)
 }
 
 export function channelAppts(channel: Channel) {
+  if (isWalkInChannel(channel)) {
+    return channel.leads
+  }
+
   return channel.leads * pctToDecimal(channel.apptSetPct)
 }
 
 export function channelShown(channel: Channel) {
+  if (isWalkInChannel(channel)) {
+    return channel.leads
+  }
+
   return channelAppts(channel) * pctToDecimal(channel.showPct)
 }
 

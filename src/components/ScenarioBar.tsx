@@ -1,4 +1,5 @@
-import { Copy, Download, FilePlus2, Printer, RotateCcw, Save, Trash2 } from 'lucide-react'
+import { Copy, Download, FilePlus2, FileUp, Printer, RotateCcw, Save, Trash2 } from 'lucide-react'
+import { useRef } from 'react'
 import type { SavedScenario } from '../lib/types'
 
 type ScenarioBarProps = {
@@ -11,6 +12,7 @@ type ScenarioBarProps = {
   onDelete: () => void
   onShare: () => void
   onReset: () => void
+  onImport: (file: File) => void
   onDownload: () => void
   onPrint: () => void
 }
@@ -25,9 +27,12 @@ export function ScenarioBar({
   onDelete,
   onShare,
   onReset,
+  onImport,
   onDownload,
   onPrint,
 }: ScenarioBarProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   return (
     <section className="scenario-bar no-print">
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
@@ -61,6 +66,21 @@ export function ScenarioBar({
         <button className="soft-button" type="button" onClick={onReset}>
           <RotateCcw size={16} />
           Reset to Sample
+        </button>
+        <input
+          ref={fileInputRef}
+          className="sr-only"
+          type="file"
+          accept=".csv,.xls,.xlsx,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          onChange={(event) => {
+            const file = event.target.files?.[0]
+            if (file) onImport(file)
+            event.target.value = ''
+          }}
+        />
+        <button className="soft-button" type="button" onClick={() => fileInputRef.current?.click()}>
+          <FileUp size={16} />
+          Import Leads
         </button>
         <button className="soft-button" type="button" onClick={onDownload}>
           <Download size={16} />

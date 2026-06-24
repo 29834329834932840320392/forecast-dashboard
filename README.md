@@ -9,6 +9,7 @@ A standalone, fully client-side forecasting tool for dealership sales planning. 
 - Add/remove channels with chart colors
 - Scenario save/load/delete through `localStorage`
 - Share links using a compact encoded URL parameter
+- CSV, XLS, and XLSX lead report imports
 - JSON download
 - Print/PDF layout
 - Static build with no backend, database, login, or API calls
@@ -29,6 +30,12 @@ npm run build
 ```
 
 The static production files are written to `dist/`.
+
+## Importing lead reports
+
+Use **Import Leads** in the scenario toolbar to load a `.csv`, `.xls`, or `.xlsx` report. The importer looks for
+`Lead Type`, `Good Leads`, `Appts Scheduled`, `Appts Shown`, and `Sold in Timeframe` columns, aggregates rows by
+channel, and updates the channel assumptions. Goals, average gross, and period remain unchanged.
 
 ## Preview The Build
 

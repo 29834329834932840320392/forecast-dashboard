@@ -1,5 +1,5 @@
 import { Trash2 } from 'lucide-react'
-import { channelLeadToSale, oneDecimal } from '../lib/calculations'
+import { channelLeadToSale, isWalkInChannel, wholePercent } from '../lib/calculations'
 import type { Channel } from '../lib/types'
 
 type ChannelCardProps = {
@@ -11,6 +11,7 @@ type ChannelCardProps = {
 
 export function ChannelCard({ channel, canRemove, onChange, onRemove }: ChannelCardProps) {
   const update = (patch: Partial<Channel>) => onChange({ ...channel, ...patch })
+  const isWalkIn = isWalkInChannel(channel)
 
   return (
     <article className="channel-card">
@@ -39,15 +40,19 @@ export function ChannelCard({ channel, canRemove, onChange, onRemove }: ChannelC
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <Input label="Leads" value={channel.leads} onChange={(leads) => update({ leads })} />
-        <Input label="Appt Set %" value={channel.apptSetPct} onChange={(apptSetPct) => update({ apptSetPct })} />
-        <Input label="Show %" value={channel.showPct} onChange={(showPct) => update({ showPct })} />
+        <Input label={isWalkIn ? 'Showroom Customers' : 'Leads'} value={channel.leads} onChange={(leads) => update({ leads })} />
+        {!isWalkIn ? (
+          <>
+            <Input label="Appt Set %" value={channel.apptSetPct} onChange={(apptSetPct) => update({ apptSetPct })} />
+            <Input label="Show %" value={channel.showPct} onChange={(showPct) => update({ showPct })} />
+          </>
+        ) : null}
         <Input label="Close %" value={channel.closePct} onChange={(closePct) => update({ closePct })} />
       </div>
 
       <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-        <span className="text-sm font-semibold text-slate-500">Lead to Sale</span>
-        <strong className="text-lg text-slate-950">{oneDecimal.format(channelLeadToSale(channel) * 100)}%</strong>
+        <span className="text-sm font-semibold text-slate-500">{isWalkIn ? 'Show to Sale' : 'Lead to Sale'}</span>
+        <strong className="text-lg text-slate-950">{wholePercent.format(channelLeadToSale(channel) * 100)}%</strong>
       </div>
     </article>
   )

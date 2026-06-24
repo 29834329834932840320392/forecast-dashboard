@@ -4,10 +4,10 @@ import {
   channelRows,
   currency,
   goalSplit,
-  oneDecimal,
   projectedUnits,
   totalTarget,
   wholeNumber,
+  wholePercent,
 } from '../lib/calculations'
 import type { PlannerState } from '../lib/types'
 import { FunnelTable } from './FunnelTable'
@@ -27,14 +27,14 @@ export function ForecastTab({ state }: { state: PlannerState }) {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           label="Projected Units"
-          value={oneDecimal.format(units)}
-          sublabel={`${oneDecimal.format(units * split.newShare)} new · ${oneDecimal.format(units * split.usedShare)} used`}
+          value={wholeNumber.format(units)}
+          sublabel={`${wholeNumber.format(units * split.newShare)} new · ${wholeNumber.format(units * split.usedShare)} used`}
           accent="#2563EB"
         />
         <KpiCard
           label="Gap to Goal"
-          value={`${gap >= 0 ? '+' : ''}${oneDecimal.format(gap)}`}
-          sublabel={gap >= 0 ? 'At or above target' : `${oneDecimal.format(Math.abs(gap))} units short`}
+          value={`${gap >= 0 ? '+' : ''}${wholeNumber.format(gap)}`}
+          sublabel={gap >= 0 ? 'At or above target' : `${wholeNumber.format(Math.abs(gap))} units short`}
           accent={gap >= 0 ? '#16A34A' : '#F97316'}
           tone={gap >= 0 ? 'positive' : 'warning'}
         />
@@ -46,7 +46,7 @@ export function ForecastTab({ state }: { state: PlannerState }) {
         />
         <KpiCard
           label="Blended Close Rate"
-          value={`${oneDecimal.format(blendedCloseRate(state.channels) * 100)}%`}
+          value={`${wholePercent.format(blendedCloseRate(state.channels) * 100)}%`}
           sublabel={`${wholeNumber.format(state.channels.reduce((sum, channel) => sum + channel.leads, 0))} total leads`}
           accent="#1B3A5C"
         />
@@ -61,7 +61,7 @@ export function ForecastTab({ state }: { state: PlannerState }) {
               <XAxis dataKey="name" tick={{ fill: '#475569', fontSize: 12 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: '#475569', fontSize: 12 }} axisLine={false} tickLine={false} />
               <Tooltip
-                formatter={(value) => [oneDecimal.format(Number(value)), 'Units']}
+                formatter={(value) => [wholeNumber.format(Number(value)), 'Units']}
                 contentStyle={{ borderRadius: 8, border: '1px solid #E2E8F0' }}
               />
               <Bar dataKey="units" radius={[6, 6, 0, 0]}>

@@ -1,4 +1,4 @@
-import { backIntoItRows, oneDecimal, totalTarget, wholeNumber } from '../lib/calculations'
+import { backIntoItRows, totalTarget, wholeNumber, wholePercent } from '../lib/calculations'
 import type { PlannerState } from '../lib/types'
 import { KpiCard } from './KpiCard'
 
@@ -22,7 +22,7 @@ export function BackIntoItTab({ state }: { state: PlannerState }) {
         <KpiCard
           label="Leads You're Pacing To Finish With"
           value={wholeNumber.format(results.currentLeads)}
-          sublabel={`${oneDecimal.format(results.currentUnits)} projected units`}
+          sublabel={`${wholeNumber.format(results.currentUnits)} projected units`}
           accent="#1B3A5C"
         />
         <KpiCard
@@ -34,7 +34,7 @@ export function BackIntoItTab({ state }: { state: PlannerState }) {
         />
         <KpiCard
           label="% More Volume"
-          value={results.additionalTotal > 0 ? `${oneDecimal.format(results.percentMoreVolume * 100)}%` : '0.0%'}
+          value={results.additionalTotal > 0 ? `${wholePercent.format(results.percentMoreVolume * 100)}%` : '0%'}
           sublabel="Compared with current entered leads"
           accent="#7C3AED"
         />

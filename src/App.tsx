@@ -6,6 +6,7 @@ import { ForecastTab } from './components/ForecastTab'
 import { GoalBar } from './components/GoalBar'
 import { ScenarioBar } from './components/ScenarioBar'
 import { channelPalette, sampleState } from './lib/calculations'
+import { importLeadReport } from './lib/importReport'
 import { buildShareUrl, stateFromUrl } from './lib/shareLink'
 import { deleteScenario, loadScenarios, saveScenario } from './lib/storage'
 import type { Channel, PlannerState, SavedScenario } from './lib/types'
@@ -142,6 +143,19 @@ function App() {
     URL.revokeObjectURL(url)
   }
 
+  const handleImport = async (file: File) => {
+    try {
+      const result = await importLeadReport(file, state.channels)
+      setState((current) => ({ ...current, channels: result.channels }))
+      setSelectedScenarioId('')
+      setToast(
+        `Imported ${result.importedRows} rows from ${result.sheetName}: ${result.channels.length} channels updated`,
+      )
+    } catch (error) {
+      setToast(error instanceof Error ? error.message : 'Could not import that file')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
       <header className="no-print border-b border-slate-200 bg-white">
@@ -184,6 +198,7 @@ function App() {
           onDelete={handleDelete}
           onShare={handleShare}
           onReset={handleReset}
+          onImport={handleImport}
           onDownload={handleDownload}
           onPrint={() => window.print()}
         />

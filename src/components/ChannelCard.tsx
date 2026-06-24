@@ -65,9 +65,10 @@ function Input({ label, value, onChange }: { label: string; value: number; onCha
       <input
         className="field-input"
         min="0"
+        step="1"
         type="number"
-        value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
+        value={Math.round(value)}
+        onChange={(event) => onChange(Math.round(Number(event.target.value)))}
       />
     </label>
   )

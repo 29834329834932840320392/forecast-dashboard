@@ -1,4 +1,4 @@
-export type Period = 'Month' | 'Week'
+export type Period = 'Month' | 'Quarter'
 
 export type Channel = {
   id: string

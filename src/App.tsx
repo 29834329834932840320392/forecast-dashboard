@@ -5,6 +5,7 @@ import { ChannelCard } from './components/ChannelCard'
 import { ForecastTab } from './components/ForecastTab'
 import { GoalBar } from './components/GoalBar'
 import { ScenarioBar } from './components/ScenarioBar'
+import { WhichLeverTab } from './components/WhichLeverTab'
 import { periodMultiplier, sampleState } from './lib/calculations'
 import { importLeadReport } from './lib/importReport'
 import { buildShareUrl, stateFromUrl } from './lib/shareLink'
@@ -16,7 +17,7 @@ type Tab = 'forecast' | 'back-into-it' | 'which-lever' | 'variance'
 const tabs: Array<{ id: Tab; label: string; disabled?: boolean }> = [
   { id: 'forecast', label: 'Forecast' },
   { id: 'back-into-it', label: 'Back Into It' },
-  { id: 'which-lever', label: 'Which Lever?', disabled: true },
+  { id: 'which-lever', label: 'Which Lever?' },
   { id: 'variance', label: 'Variance / Why We Missed', disabled: true },
 ]
 
@@ -24,7 +25,12 @@ function withSupportedPeriod(state: PlannerState): PlannerState {
   const channels = sampleState.channels.map(
     (defaultChannel) => state.channels.find((channel) => channel.id === defaultChannel.id) ?? defaultChannel,
   )
-  return { ...state, period: state.period === 'Quarter' ? 'Quarter' : 'Month', channels }
+  return {
+    ...state,
+    costPerLead: Number.isFinite(state.costPerLead) ? state.costPerLead : sampleState.costPerLead,
+    period: state.period === 'Quarter' ? 'Quarter' : 'Month',
+    channels,
+  }
 }
 
 function App() {
@@ -233,7 +239,9 @@ function App() {
               <BarChart3 size={24} />
               <h1>Ancira Forecast Planner</h1>
             </div>
-            {activeTab === 'forecast' ? <ForecastTab state={state} /> : <BackIntoItTab state={state} />}
+            {activeTab === 'forecast' ? <ForecastTab state={state} /> : null}
+            {activeTab === 'back-into-it' ? <BackIntoItTab state={state} /> : null}
+            {activeTab === 'which-lever' ? <WhichLeverTab state={state} onChange={updateState} /> : null}
           </section>
         </div>
       </main>

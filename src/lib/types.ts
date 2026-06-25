@@ -14,6 +14,7 @@ export type PlannerState = {
   newGoal: number
   usedGoal: number
   avgGross: number
+  costPerLead: number
   period: Period
   channels: Channel[]
 }

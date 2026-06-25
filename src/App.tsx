@@ -5,7 +5,7 @@ import { ChannelCard } from './components/ChannelCard'
 import { ForecastTab } from './components/ForecastTab'
 import { GoalBar } from './components/GoalBar'
 import { ScenarioBar } from './components/ScenarioBar'
-import { channelPalette, sampleState } from './lib/calculations'
+import { channelPalette, periodMultiplier, sampleState } from './lib/calculations'
 import { importLeadReport } from './lib/importReport'
 import { buildShareUrl, stateFromUrl } from './lib/shareLink'
 import { deleteScenario, loadScenarios, saveScenario } from './lib/storage'
@@ -151,7 +151,9 @@ function App() {
   const handleImport = async (file: File) => {
     try {
       const result = await importLeadReport(file, state.channels)
-      setState((current) => ({ ...current, channels: result.channels }))
+      const multiplier = periodMultiplier(state)
+      const channels = result.channels.map((channel) => ({ ...channel, leads: channel.leads / multiplier }))
+      setState((current) => ({ ...current, channels }))
       setSelectedScenarioId('')
       setToast(
         `Imported ${result.importedRows} rows from ${result.sheetName}: ${result.channels.length} channels updated`,
@@ -238,6 +240,7 @@ function App() {
               <ChannelCard
                 key={channel.id}
                 channel={channel}
+                volumeMultiplier={periodMultiplier(state)}
                 canRemove={state.channels.length > 1}
                 onChange={updateChannel}
                 onRemove={() => removeChannel(channel.id)}

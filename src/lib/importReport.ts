@@ -71,7 +71,7 @@ function canonicalChannelName(value: unknown) {
   }
   if (normalized.includes('phone') || normalized.includes('call')) return 'Phone'
   if (normalized.includes('walkin') || normalized.includes('showroom')) return 'Walk-in'
-  return String(value).trim()
+  return ''
 }
 
 function channelId(name: string) {

@@ -1,11 +1,11 @@
-import { BarChart3, Plus, TrendingUp } from 'lucide-react'
+import { BarChart3, TrendingUp } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { BackIntoItTab } from './components/BackIntoItTab'
 import { ChannelCard } from './components/ChannelCard'
 import { ForecastTab } from './components/ForecastTab'
 import { GoalBar } from './components/GoalBar'
 import { ScenarioBar } from './components/ScenarioBar'
-import { channelPalette, periodMultiplier, sampleState } from './lib/calculations'
+import { periodMultiplier, sampleState } from './lib/calculations'
 import { importLeadReport } from './lib/importReport'
 import { buildShareUrl, stateFromUrl } from './lib/shareLink'
 import { deleteScenario, loadScenarios, saveScenario } from './lib/storage'
@@ -21,7 +21,10 @@ const tabs: Array<{ id: Tab; label: string; disabled?: boolean }> = [
 ]
 
 function withSupportedPeriod(state: PlannerState): PlannerState {
-  return { ...state, period: state.period === 'Quarter' ? 'Quarter' : 'Month' }
+  const channels = sampleState.channels.map(
+    (defaultChannel) => state.channels.find((channel) => channel.id === defaultChannel.id) ?? defaultChannel,
+  )
+  return { ...state, period: state.period === 'Quarter' ? 'Quarter' : 'Month', channels }
 }
 
 function App() {
@@ -49,26 +52,6 @@ function App() {
       ...current,
       channels: current.channels.map((channel) => (channel.id === updated.id ? updated : channel)),
     }))
-  }
-
-  const addChannel = () => {
-    setState((current) => {
-      const nextIndex = current.channels.length
-      const channel: Channel = {
-        id: crypto.randomUUID(),
-        name: `Channel ${nextIndex + 1}`,
-        color: channelPalette[nextIndex % channelPalette.length],
-        leads: 0,
-        apptSetPct: 25,
-        showPct: 70,
-        closePct: 35,
-      }
-      return { ...current, channels: [...current.channels, channel] }
-    })
-  }
-
-  const removeChannel = (id: string) => {
-    setState((current) => ({ ...current, channels: current.channels.filter((channel) => channel.id !== id) }))
   }
 
   const refreshScenarios = () => setScenarios(loadScenarios())
@@ -152,7 +135,12 @@ function App() {
     try {
       const result = await importLeadReport(file, state.channels)
       const multiplier = periodMultiplier(state)
-      const channels = result.channels.map((channel) => ({ ...channel, leads: channel.leads / multiplier }))
+      const channels = state.channels.map((currentChannel) => {
+        const importedChannel = result.channels.find((channel) => channel.id === currentChannel.id)
+        return importedChannel
+          ? { ...importedChannel, color: currentChannel.color, leads: importedChannel.leads / multiplier }
+          : currentChannel
+      })
       setState((current) => ({ ...current, channels }))
       setSelectedScenarioId('')
       setToast(
@@ -226,24 +214,16 @@ function App() {
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[360px_1fr]">
           <aside className="no-print space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-slate-950">Lead Channels</h2>
-                <p className="text-sm text-slate-500">Edit assumptions; results update instantly.</p>
-              </div>
-              <button className="primary-button shrink-0" type="button" onClick={addChannel}>
-                <Plus size={16} />
-                Add
-              </button>
+            <div>
+              <h2 className="text-lg font-bold text-slate-950">Lead Channels</h2>
+              <p className="text-sm text-slate-500">Edit assumptions; results update instantly.</p>
             </div>
             {state.channels.map((channel) => (
               <ChannelCard
                 key={channel.id}
                 channel={channel}
                 volumeMultiplier={periodMultiplier(state)}
-                canRemove={state.channels.length > 1}
                 onChange={updateChannel}
-                onRemove={() => removeChannel(channel.id)}
               />
             ))}
           </aside>

@@ -1,4 +1,4 @@
-import { currency, targetGross, totalTarget, wholeNumber } from '../lib/calculations'
+import { currency, periodMultiplier, targetGross, totalTarget, wholeNumber } from '../lib/calculations'
 import type { PlannerState } from '../lib/types'
 
 type GoalBarProps = {
@@ -7,17 +7,19 @@ type GoalBarProps = {
 }
 
 export function GoalBar({ state, onChange }: GoalBarProps) {
+  const multiplier = periodMultiplier(state)
+
   return (
     <section className="goal-bar">
       <NumberField
         label="New Units Goal"
-        value={state.newGoal}
-        onChange={(newGoal) => onChange({ newGoal })}
+        value={state.newGoal * multiplier}
+        onChange={(newGoal) => onChange({ newGoal: newGoal / multiplier })}
       />
       <NumberField
         label="Used Units Goal"
-        value={state.usedGoal}
-        onChange={(usedGoal) => onChange({ usedGoal })}
+        value={state.usedGoal * multiplier}
+        onChange={(usedGoal) => onChange({ usedGoal: usedGoal / multiplier })}
       />
       <Summary label="Total Target" value={wholeNumber.format(totalTarget(state))} />
       <NumberField

@@ -32,9 +32,11 @@ The static production files are written to `dist/`.
 
 ## Importing lead reports
 
-Use **Import Leads** in the scenario toolbar to load a `.csv`, `.xls`, or `.xlsx` report. The importer looks for
+Use **Upload CRM Report** above the lead channels to load a `.csv`, `.xls`, or `.xlsx` report. The importer looks for
 `Lead Type`, `Good Leads`, `Appts Scheduled`, `Appts Shown`, and `Sold in Timeframe` columns, aggregates rows by
 channel, and updates the channel assumptions. Goals, average gross, and period remain unchanged.
+The report date is read from filenames such as `LSROI_Report_2026-06-19.csv`, and period-to-date totals are paced
+through the end of the selected month or quarter.
 
 ## Preview The Build
 

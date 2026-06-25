@@ -6,7 +6,7 @@ A standalone, fully client-side forecasting tool for dealership sales planning. 
 
 - Forecast and Back Into It tabs
 - Editable new/used goals, average gross, month/quarter period, and lead channels
-- Add/remove channels with chart colors
+- Fixed Internet / BDC, Phone, and Walk-in channels with chart colors
 - Scenario save/load/delete through `localStorage`
 - Share links using a compact encoded URL parameter
 - CSV, XLS, and XLSX lead report imports

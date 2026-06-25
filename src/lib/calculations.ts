@@ -188,7 +188,7 @@ export const sampleState: PlannerState = {
   newGoal: 250,
   usedGoal: 150,
   avgGross: 2414,
-  costPerLead: 50,
+  costPerLead: 75,
   period: 'Month',
   channels: [
     {

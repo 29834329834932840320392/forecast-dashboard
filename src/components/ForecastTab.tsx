@@ -4,6 +4,7 @@ import {
   channelRows,
   currency,
   goalSplit,
+  periodMultiplier,
   projectedUnits,
   totalTarget,
   wholeNumber,
@@ -14,11 +15,12 @@ import { FunnelTable } from './FunnelTable'
 import { KpiCard } from './KpiCard'
 
 export function ForecastTab({ state }: { state: PlannerState }) {
-  const units = projectedUnits(state.channels)
+  const multiplier = periodMultiplier(state)
+  const units = projectedUnits(state.channels, multiplier)
   const target = totalTarget(state)
   const gap = units - target
   const split = goalSplit(state)
-  const rows = channelRows(state.channels)
+  const rows = channelRows(state.channels, multiplier)
   const periodLabel = state.period.toLowerCase()
 
   return (
@@ -47,7 +49,7 @@ export function ForecastTab({ state }: { state: PlannerState }) {
         <KpiCard
           label="Blended Close Rate"
           value={`${wholePercent.format(blendedCloseRate(state.channels) * 100)}%`}
-          sublabel={`${wholeNumber.format(state.channels.reduce((sum, channel) => sum + channel.leads, 0))} total leads`}
+          sublabel={`${wholeNumber.format(state.channels.reduce((sum, channel) => sum + channel.leads, 0) * multiplier)} total leads`}
           accent="#1B3A5C"
         />
       </div>
@@ -74,7 +76,7 @@ export function ForecastTab({ state }: { state: PlannerState }) {
         </div>
       </section>
 
-      <FunnelTable channels={state.channels} />
+      <FunnelTable channels={state.channels} multiplier={multiplier} />
     </div>
   )
 }

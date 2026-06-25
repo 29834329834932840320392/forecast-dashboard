@@ -23,6 +23,10 @@ export function clampNumber(value: number, min = 0, max = Number.POSITIVE_INFINI
   return Math.min(Math.max(value, min), max)
 }
 
+export function periodMultiplier(state: PlannerState) {
+  return state.period === 'Quarter' ? 3 : 1
+}
+
 export function isWalkInChannel(channel: Channel) {
   return channel.id === 'walk-in'
 }
@@ -56,19 +60,19 @@ export function channelUnits(channel: Channel) {
 }
 
 export function totalTarget(state: PlannerState) {
-  return state.newGoal + state.usedGoal
+  return (state.newGoal + state.usedGoal) * periodMultiplier(state)
 }
 
 export function targetGross(state: PlannerState) {
   return totalTarget(state) * state.avgGross
 }
 
-export function totalLeads(channels: Channel[]) {
-  return channels.reduce((sum, channel) => sum + channel.leads, 0)
+export function totalLeads(channels: Channel[], multiplier = 1) {
+  return channels.reduce((sum, channel) => sum + channel.leads, 0) * multiplier
 }
 
-export function projectedUnits(channels: Channel[]) {
-  return channels.reduce((sum, channel) => sum + channelUnits(channel), 0)
+export function projectedUnits(channels: Channel[], multiplier = 1) {
+  return channels.reduce((sum, channel) => sum + channelUnits(channel), 0) * multiplier
 }
 
 export function blendedCloseRate(channels: Channel[]) {
@@ -77,7 +81,7 @@ export function blendedCloseRate(channels: Channel[]) {
 }
 
 export function goalSplit(state: PlannerState) {
-  const target = totalTarget(state)
+  const target = state.newGoal + state.usedGoal
   if (target <= 0) {
     return { newShare: 0.5, usedShare: 0.5 }
   }
@@ -88,33 +92,36 @@ export function goalSplit(state: PlannerState) {
   }
 }
 
-export function channelRows(channels: Channel[]) {
+export function channelRows(channels: Channel[], multiplier = 1) {
   return channels.map((channel) => ({
     ...channel,
-    appts: channelAppts(channel),
-    shown: channelShown(channel),
+    leads: channel.leads * multiplier,
+    appts: channelAppts(channel) * multiplier,
+    shown: channelShown(channel) * multiplier,
     leadToSale: channelLeadToSale(channel),
-    units: channelUnits(channel),
+    units: channelUnits(channel) * multiplier,
   }))
 }
 
 export function backIntoItRows(state: PlannerState) {
-  const leads = totalLeads(state.channels)
+  const multiplier = periodMultiplier(state)
+  const leads = totalLeads(state.channels, multiplier)
   const target = totalTarget(state)
-  const currentUnits = projectedUnits(state.channels)
+  const currentUnits = projectedUnits(state.channels, multiplier)
   const blended = blendedCloseRate(state.channels)
   const leadsNeededTotal = blended > 0 ? target / blended : 0
   const additionalTotal = Math.max(0, leadsNeededTotal - leads)
   const percentMoreVolume = leads > 0 ? additionalTotal / leads : 0
 
   const rows = state.channels.map((channel) => {
-    const share = leads > 0 ? channel.leads / leads : 1 / Math.max(state.channels.length, 1)
+    const leadsToday = channel.leads * multiplier
+    const share = leads > 0 ? leadsToday / leads : 1 / Math.max(state.channels.length, 1)
     const leadsNeeded = leadsNeededTotal * share
-    const additional = leadsNeeded - channel.leads
+    const additional = leadsNeeded - leadsToday
 
     return {
       ...channel,
-      leadsToday: channel.leads,
+      leadsToday,
       leadsNeeded,
       additional,
       status: additional > 0 ? 'Needs volume' : 'On pace',

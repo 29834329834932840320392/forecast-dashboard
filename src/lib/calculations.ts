@@ -184,11 +184,40 @@ export function whichLeverResults(state: PlannerState) {
   }
 }
 
+export function varianceResults(state: PlannerState) {
+  const multiplier = periodMultiplier(state)
+  const plannedLeads = totalLeads(state.channels, multiplier)
+  const plannedUnits = Math.round(projectedUnits(state.channels, multiplier))
+  const plannedCloseRate = plannedLeads > 0 ? plannedUnits / plannedLeads : 0
+  const actualLeads = Math.round(state.actualLeads * multiplier)
+  const actualUnits = Math.round(state.actualUnitsSold * multiplier)
+  const actualCloseRate = actualLeads > 0 ? actualUnits / actualLeads : 0
+  const leadDifference = actualLeads - plannedLeads
+  const volumeImpact = leadDifference * plannedCloseRate
+  const closeRateImpact = actualUnits - actualLeads * plannedCloseRate
+  const totalVariance = actualUnits - plannedUnits
+
+  return {
+    plannedLeads,
+    plannedUnits,
+    plannedCloseRate,
+    actualLeads,
+    actualUnits,
+    actualCloseRate,
+    leadDifference,
+    volumeImpact,
+    closeRateImpact,
+    totalVariance,
+  }
+}
+
 export const sampleState: PlannerState = {
   newGoal: 250,
   usedGoal: 150,
   avgGross: 2414,
   costPerLead: 75,
+  actualLeads: 2969,
+  actualUnitsSold: 378.529668,
   period: 'Month',
   channels: [
     {

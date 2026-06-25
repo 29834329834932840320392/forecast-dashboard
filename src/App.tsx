@@ -143,7 +143,7 @@ function App() {
 
   const handleImport = async (file: File) => {
     try {
-      const result = await importLeadReport(file, state.channels)
+      const result = await importLeadReport(file, state.channels, state.period)
       const multiplier = periodMultiplier(state)
       const channels = state.channels.map((currentChannel) => {
         const importedChannel = result.channels.find((channel) => channel.id === currentChannel.id)
@@ -154,7 +154,7 @@ function App() {
       setState((current) => ({ ...current, channels }))
       setSelectedScenarioId('')
       setToast(
-        `Imported ${result.importedRows} rows from ${result.sheetName}: ${result.channels.length} channels updated`,
+        `Imported ${result.importedRows} rows through ${result.reportDate} and projected to ${result.periodEnd}`,
       )
     } catch (error) {
       setToast(error instanceof Error ? error.message : 'Could not import that file')

@@ -1,23 +1,20 @@
-import { Trash2 } from 'lucide-react'
 import { channelLeadToSale, isWalkInChannel, wholePercent } from '../lib/calculations'
 import type { Channel } from '../lib/types'
 
 type ChannelCardProps = {
   channel: Channel
   volumeMultiplier: number
-  canRemove: boolean
   onChange: (channel: Channel) => void
-  onRemove: () => void
 }
 
-export function ChannelCard({ channel, volumeMultiplier, canRemove, onChange, onRemove }: ChannelCardProps) {
+export function ChannelCard({ channel, volumeMultiplier, onChange }: ChannelCardProps) {
   const update = (patch: Partial<Channel>) => onChange({ ...channel, ...patch })
   const isWalkIn = isWalkInChannel(channel)
 
   return (
     <article className="channel-card">
-      <div className="flex items-start justify-between gap-3">
-        <label className="min-w-0 flex-1">
+      <div>
+        <label>
           <span className="mb-1 flex items-center gap-2 text-xs font-bold uppercase text-slate-500">
             <span className="h-3 w-3 rounded-full" style={{ backgroundColor: channel.color }} />
             Channel
@@ -28,16 +25,6 @@ export function ChannelCard({ channel, volumeMultiplier, canRemove, onChange, on
             onChange={(event) => update({ name: event.target.value })}
           />
         </label>
-        <button
-          className="icon-button"
-          type="button"
-          title="Remove channel"
-          aria-label={`Remove ${channel.name}`}
-          disabled={!canRemove}
-          onClick={onRemove}
-        >
-          <Trash2 size={17} />
-        </button>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3">

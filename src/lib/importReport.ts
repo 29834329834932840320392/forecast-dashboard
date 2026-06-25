@@ -1,5 +1,5 @@
 import { channelPalette } from './calculations'
-import type { Channel } from './types'
+import type { Channel, Period } from './types'
 
 type ColumnKey = 'leadType' | 'leads' | 'appointments' | 'shown' | 'sold'
 
@@ -14,6 +14,9 @@ type Aggregate = {
 export type ImportResult = {
   channels: Channel[]
   importedRows: number
+  periodEnd: string
+  projectionFactor: number
+  reportDate: string
   sheetName: string
 }
 
@@ -86,7 +89,55 @@ function percent(numerator: number, denominator: number) {
   return Math.round(Math.min(Math.max((numerator / denominator) * 100, 0), 100))
 }
 
-function rowsToChannels(rows: unknown[][], existingChannels: Channel[]) {
+function dateKey(date: Date) {
+  return [
+    date.getUTCFullYear(),
+    String(date.getUTCMonth() + 1).padStart(2, '0'),
+    String(date.getUTCDate()).padStart(2, '0'),
+  ].join('-')
+}
+
+function reportDateFromFile(file: File) {
+  const filenameDate = file.name.match(/(?:^|[_-])(\d{4})[-_](\d{2})[-_](\d{2})(?:\D|$)/)
+  if (filenameDate) {
+    const [, year, month, day] = filenameDate
+    const parsed = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)))
+    if (
+      parsed.getUTCFullYear() === Number(year) &&
+      parsed.getUTCMonth() === Number(month) - 1 &&
+      parsed.getUTCDate() === Number(day)
+    ) {
+      return parsed
+    }
+  }
+
+  const modified = new Date(file.lastModified)
+  if (Number.isFinite(modified.getTime())) {
+    return new Date(Date.UTC(modified.getFullYear(), modified.getMonth(), modified.getDate()))
+  }
+
+  const today = new Date()
+  return new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()))
+}
+
+function periodProjection(reportDate: Date, period: Period) {
+  const year = reportDate.getUTCFullYear()
+  const month = reportDate.getUTCMonth()
+  const startMonth = period === 'Quarter' ? Math.floor(month / 3) * 3 : month
+  const endMonth = period === 'Quarter' ? startMonth + 2 : month
+  const start = new Date(Date.UTC(year, startMonth, 1))
+  const end = new Date(Date.UTC(year, endMonth + 1, 0))
+  const dayMs = 24 * 60 * 60 * 1000
+  const elapsedDays = Math.floor((reportDate.getTime() - start.getTime()) / dayMs) + 1
+  const totalDays = Math.floor((end.getTime() - start.getTime()) / dayMs) + 1
+
+  return {
+    factor: totalDays / Math.max(1, Math.min(elapsedDays, totalDays)),
+    periodEnd: dateKey(end),
+  }
+}
+
+function rowsToChannels(rows: unknown[][], existingChannels: Channel[], projectionFactor: number) {
   const header = findHeader(rows)
   if (!header) return null
 
@@ -133,7 +184,7 @@ function rowsToChannels(rows: unknown[][], existingChannels: Channel[]) {
       id,
       name: aggregate.name,
       color: existing?.color ?? channelPalette[index % channelPalette.length],
-      leads: Math.round(aggregate.leads),
+      leads: Math.round(aggregate.leads * projectionFactor),
       apptSetPct: isWalkIn ? 0 : percent(aggregate.appointments, aggregate.leads),
       showPct: isWalkIn ? 0 : percent(aggregate.shown, aggregate.appointments),
       closePct: percent(aggregate.sold, isWalkIn ? aggregate.leads : aggregate.shown),
@@ -143,12 +194,18 @@ function rowsToChannels(rows: unknown[][], existingChannels: Channel[]) {
   return { channels, importedRows }
 }
 
-export async function importLeadReport(file: File, existingChannels: Channel[]): Promise<ImportResult> {
+export async function importLeadReport(
+  file: File,
+  existingChannels: Channel[],
+  period: Period,
+): Promise<ImportResult> {
   const extension = file.name.split('.').pop()?.toLowerCase()
   if (!extension || !['csv', 'xls', 'xlsx'].includes(extension)) {
     throw new Error('Choose a CSV, XLS, or XLSX file.')
   }
 
+  const reportDate = reportDateFromFile(file)
+  const projection = periodProjection(reportDate, period)
   const XLSX = await import('xlsx')
   const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' })
 
@@ -160,8 +217,16 @@ export async function importLeadReport(file: File, existingChannels: Channel[]):
       defval: '',
       blankrows: false,
     })
-    const result = rowsToChannels(rows, existingChannels)
-    if (result) return { ...result, sheetName }
+    const result = rowsToChannels(rows, existingChannels, projection.factor)
+    if (result) {
+      return {
+        ...result,
+        periodEnd: projection.periodEnd,
+        projectionFactor: projection.factor,
+        reportDate: dateKey(reportDate),
+        sheetName,
+      }
+    }
   }
 
   throw new Error(

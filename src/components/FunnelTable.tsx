@@ -1,8 +1,8 @@
 import { channelRows, isWalkInChannel, wholeNumber, wholePercent } from '../lib/calculations'
 import type { Channel } from '../lib/types'
 
-export function FunnelTable({ channels }: { channels: Channel[] }) {
-  const rows = channelRows(channels)
+export function FunnelTable({ channels, multiplier }: { channels: Channel[]; multiplier: number }) {
+  const rows = channelRows(channels, multiplier)
   const totals = rows.reduce(
     (sum, row) => ({
       leads: sum.leads + row.leads,

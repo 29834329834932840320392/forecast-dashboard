@@ -5,6 +5,7 @@ import { ChannelCard } from './components/ChannelCard'
 import { ForecastTab } from './components/ForecastTab'
 import { GoalBar } from './components/GoalBar'
 import { ScenarioBar } from './components/ScenarioBar'
+import { VarianceTab } from './components/VarianceTab'
 import { WhichLeverTab } from './components/WhichLeverTab'
 import { periodMultiplier, sampleState } from './lib/calculations'
 import { importLeadReport } from './lib/importReport'
@@ -18,7 +19,7 @@ const tabs: Array<{ id: Tab; label: string; disabled?: boolean }> = [
   { id: 'forecast', label: 'Forecast' },
   { id: 'back-into-it', label: 'Back Into It' },
   { id: 'which-lever', label: 'Which Lever?' },
-  { id: 'variance', label: 'Variance / Why We Missed', disabled: true },
+  { id: 'variance', label: 'Variance / Why We Missed' },
 ]
 
 function withSupportedPeriod(state: PlannerState): PlannerState {
@@ -28,6 +29,8 @@ function withSupportedPeriod(state: PlannerState): PlannerState {
   return {
     ...state,
     costPerLead: Number.isFinite(state.costPerLead) ? state.costPerLead : sampleState.costPerLead,
+    actualLeads: Number.isFinite(state.actualLeads) ? state.actualLeads : sampleState.actualLeads,
+    actualUnitsSold: Number.isFinite(state.actualUnitsSold) ? state.actualUnitsSold : sampleState.actualUnitsSold,
     period: state.period === 'Quarter' ? 'Quarter' : 'Month',
     channels,
   }
@@ -242,6 +245,7 @@ function App() {
             {activeTab === 'forecast' ? <ForecastTab state={state} /> : null}
             {activeTab === 'back-into-it' ? <BackIntoItTab state={state} /> : null}
             {activeTab === 'which-lever' ? <WhichLeverTab state={state} onChange={updateState} /> : null}
+            {activeTab === 'variance' ? <VarianceTab state={state} onChange={updateState} /> : null}
           </section>
         </div>
       </main>

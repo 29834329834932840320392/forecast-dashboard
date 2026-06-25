@@ -20,8 +20,12 @@ const tabs: Array<{ id: Tab; label: string; disabled?: boolean }> = [
   { id: 'variance', label: 'Variance / Why We Missed', disabled: true },
 ]
 
+function withSupportedPeriod(state: PlannerState): PlannerState {
+  return { ...state, period: state.period === 'Quarter' ? 'Quarter' : 'Month' }
+}
+
 function App() {
-  const [state, setState] = useState<PlannerState>(() => stateFromUrl() ?? sampleState)
+  const [state, setState] = useState<PlannerState>(() => withSupportedPeriod(stateFromUrl() ?? sampleState))
   const [activeTab, setActiveTab] = useState<Tab>('forecast')
   const [scenarios, setScenarios] = useState<SavedScenario[]>(() => loadScenarios())
   const [selectedScenarioId, setSelectedScenarioId] = useState('')
@@ -78,8 +82,9 @@ function App() {
 
     const scenario = loadScenarios().find((item) => item.id === id)
     if (!scenario) return
-    setState(scenario.state)
-    setSavedSnapshot(JSON.stringify(scenario.state))
+    const normalizedState = withSupportedPeriod(scenario.state)
+    setState(normalizedState)
+    setSavedSnapshot(JSON.stringify(normalizedState))
   }
 
   const handleSave = () => {
@@ -180,7 +185,7 @@ function App() {
               onChange={(event) => updateState({ period: event.target.value as PlannerState['period'] })}
             >
               <option>Month</option>
-              <option>Week</option>
+              <option>Quarter</option>
             </select>
           </label>
         </div>

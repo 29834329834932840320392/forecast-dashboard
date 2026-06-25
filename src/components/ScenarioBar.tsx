@@ -78,7 +78,7 @@ export function ScenarioBar({
             event.target.value = ''
           }}
         />
-        <button className="soft-button" type="button" onClick={() => fileInputRef.current?.click()}>
+        <button className="primary-button" type="button" onClick={() => fileInputRef.current?.click()}>
           <FileUp size={16} />
           Import Leads
         </button>
@@ -86,7 +86,7 @@ export function ScenarioBar({
           <Download size={16} />
           Download
         </button>
-        <button className="primary-button" type="button" onClick={onPrint}>
+        <button className="soft-button" type="button" onClick={onPrint}>
           <Printer size={16} />
           Print / PDF
         </button>

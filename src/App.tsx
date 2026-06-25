@@ -10,7 +10,13 @@ import { WhichLeverTab } from './components/WhichLeverTab'
 import { periodMultiplier, sampleState } from './lib/calculations'
 import { importLeadReport } from './lib/importReport'
 import { buildShareUrl, stateFromUrl } from './lib/shareLink'
-import { deleteScenario, loadScenarios, saveScenario } from './lib/storage'
+import {
+  deleteScenario,
+  loadGoalPreferences,
+  loadScenarios,
+  persistGoalPreferences,
+  saveScenario,
+} from './lib/storage'
 import type { Channel, PlannerState, SavedScenario } from './lib/types'
 
 type Tab = 'forecast' | 'back-into-it' | 'which-lever' | 'variance'
@@ -38,7 +44,13 @@ function withSupportedPeriod(state: PlannerState): PlannerState {
 
 function App() {
   const crmReportInputRef = useRef<HTMLInputElement>(null)
-  const [state, setState] = useState<PlannerState>(() => withSupportedPeriod(stateFromUrl() ?? sampleState))
+  const [state, setState] = useState<PlannerState>(() => {
+    const sharedState = stateFromUrl()
+    if (sharedState) return withSupportedPeriod(sharedState)
+
+    const rememberedGoals = loadGoalPreferences()
+    return withSupportedPeriod(rememberedGoals ? { ...sampleState, ...rememberedGoals } : sampleState)
+  })
   const [activeTab, setActiveTab] = useState<Tab>('forecast')
   const [scenarios, setScenarios] = useState<SavedScenario[]>(() => loadScenarios())
   const [selectedScenarioId, setSelectedScenarioId] = useState('')
@@ -52,6 +64,14 @@ function App() {
     const timeout = window.setTimeout(() => setToast(''), 2400)
     return () => window.clearTimeout(timeout)
   }, [toast])
+
+  useEffect(() => {
+    persistGoalPreferences({
+      newGoal: state.newGoal,
+      usedGoal: state.usedGoal,
+      avgGross: state.avgGross,
+    })
+  }, [state.avgGross, state.newGoal, state.usedGoal])
 
   const updateState = (patch: Partial<PlannerState>) => {
     setState((current) => ({ ...current, ...patch }))

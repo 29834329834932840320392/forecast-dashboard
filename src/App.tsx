@@ -1,5 +1,5 @@
-import { BarChart3, TrendingUp } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { BarChart3, FileUp, TrendingUp } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { BackIntoItTab } from './components/BackIntoItTab'
 import { ChannelCard } from './components/ChannelCard'
 import { ForecastTab } from './components/ForecastTab'
@@ -37,6 +37,7 @@ function withSupportedPeriod(state: PlannerState): PlannerState {
 }
 
 function App() {
+  const crmReportInputRef = useRef<HTMLInputElement>(null)
   const [state, setState] = useState<PlannerState>(() => withSupportedPeriod(stateFromUrl() ?? sampleState))
   const [activeTab, setActiveTab] = useState<Tab>('forecast')
   const [scenarios, setScenarios] = useState<SavedScenario[]>(() => loadScenarios())
@@ -202,7 +203,6 @@ function App() {
           onDelete={handleDelete}
           onShare={handleShare}
           onReset={handleReset}
-          onImport={handleImport}
           onDownload={handleDownload}
           onPrint={() => window.print()}
         />
@@ -223,6 +223,30 @@ function App() {
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[360px_1fr]">
           <aside className="no-print space-y-4">
+            <div className="rounded-lg border border-orange-200 bg-white p-4 shadow-sm">
+              <input
+                ref={crmReportInputRef}
+                className="sr-only"
+                type="file"
+                accept=".csv,.xls,.xlsx,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                onChange={(event) => {
+                  const file = event.target.files?.[0]
+                  if (file) handleImport(file)
+                  event.target.value = ''
+                }}
+              />
+              <button
+                className="primary-button w-full justify-center"
+                type="button"
+                onClick={() => crmReportInputRef.current?.click()}
+              >
+                <FileUp size={17} />
+                Upload CRM Report
+              </button>
+              <p className="mt-2 text-center text-xs font-medium text-slate-500">
+                VinSolutions Lead Source ROI report
+              </p>
+            </div>
             <div>
               <h2 className="text-lg font-bold text-slate-950">Lead Channels</h2>
               <p className="text-sm text-slate-500">Edit assumptions; results update instantly.</p>

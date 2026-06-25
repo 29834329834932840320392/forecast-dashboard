@@ -138,10 +138,57 @@ export function backIntoItRows(state: PlannerState) {
   }
 }
 
+export function whichLeverResults(state: PlannerState) {
+  const multiplier = periodMultiplier(state)
+  const target = totalTarget(state)
+  const currentLeads = totalLeads(state.channels, multiplier)
+  const currentUnits = projectedUnits(state.channels, multiplier)
+  const unitGap = Math.max(0, target - currentUnits)
+  const currentCloseRate = currentLeads > 0 ? currentUnits / currentLeads : 0
+  const additionalLeads = currentCloseRate > 0 ? unitGap / currentCloseRate : 0
+  const estimatedMediaCost = additionalLeads * state.costPerLead
+  const costPerExtraUnit = unitGap > 0 ? estimatedMediaCost / unitGap : 0
+  const requiredCloseRate = currentLeads > 0 ? target / currentLeads : 0
+  const liftPoints = Math.max(0, requiredCloseRate - currentCloseRate)
+  const relativeLift = currentCloseRate > 0 ? liftPoints / currentCloseRate : 0
+  const closeRateFeasible = requiredCloseRate <= 1
+  const addedGross = unitGap * state.avgGross
+
+  let recommendation: 'On pace' | 'Buy more leads' | 'Close better' = 'On pace'
+  let rationale = 'Current volume and conversion assumptions already reach the target.'
+
+  if (unitGap > 0 && !closeRateFeasible) {
+    recommendation = 'Buy more leads'
+    rationale = 'The close rate required at current volume is above 100%, so additional volume is necessary.'
+  } else if (unitGap > 0) {
+    recommendation = 'Close better'
+    rationale = `Improving conversion reaches the same target without the estimated ${currency.format(estimatedMediaCost)} in added media spend.`
+  }
+
+  return {
+    target,
+    currentLeads,
+    currentUnits,
+    unitGap,
+    currentCloseRate,
+    additionalLeads,
+    estimatedMediaCost,
+    costPerExtraUnit,
+    requiredCloseRate,
+    liftPoints,
+    relativeLift,
+    closeRateFeasible,
+    addedGross,
+    recommendation,
+    rationale,
+  }
+}
+
 export const sampleState: PlannerState = {
   newGoal: 250,
   usedGoal: 150,
   avgGross: 2414,
+  costPerLead: 50,
   period: 'Month',
   channels: [
     {

@@ -4,12 +4,13 @@ import type { Channel } from '../lib/types'
 
 type ChannelCardProps = {
   channel: Channel
+  volumeMultiplier: number
   canRemove: boolean
   onChange: (channel: Channel) => void
   onRemove: () => void
 }
 
-export function ChannelCard({ channel, canRemove, onChange, onRemove }: ChannelCardProps) {
+export function ChannelCard({ channel, volumeMultiplier, canRemove, onChange, onRemove }: ChannelCardProps) {
   const update = (patch: Partial<Channel>) => onChange({ ...channel, ...patch })
   const isWalkIn = isWalkInChannel(channel)
 
@@ -40,7 +41,11 @@ export function ChannelCard({ channel, canRemove, onChange, onRemove }: ChannelC
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <Input label={isWalkIn ? 'Showroom Customers' : 'Leads'} value={channel.leads} onChange={(leads) => update({ leads })} />
+        <Input
+          label={isWalkIn ? 'Showroom Customers' : 'Leads'}
+          value={channel.leads * volumeMultiplier}
+          onChange={(leads) => update({ leads: leads / volumeMultiplier })}
+        />
         {!isWalkIn ? (
           <>
             <Input label="Appt Set %" value={channel.apptSetPct} onChange={(apptSetPct) => update({ apptSetPct })} />
